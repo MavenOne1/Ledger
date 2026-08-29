@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ledger">
+<meta name="theme-color" content="#0F1518">
+<meta name="description" content="A private budget ledger. Your data never leaves your device.">
+<title>Ledger — XY Digital Media</title>
+<style>
+  /* Ledger — Copyright (c) 2026 XY Digital Media. All rights reserved.
+     Not open source. No permission granted to use, copy, or distribute.
+     No external fonts, no CDNs, no analytics. Zero network requests by design. */
+  :root{
+    --ink:#0F1518;
+    --panel:#172025;
+    --panel2:#1D272D;
+    --edge:#2C383F;
+    --edge-soft:#212C32;
+    --bone:#ECE7DE;
+    --muted:#8B979C;
+    --mint:#63D6A0;
+    --coral:#E87B68;
+    --brass:#D6A34A;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --r:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--ink);color:var(--bone);font-family:var(--sans);font-size:16px;line-height:1.45}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .wrap{max-width:540px;margin:0 auto;padding:0 14px 96px}
+
+  /* ---- header ---- */
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 2px 12px}
+  .brand{display:flex;align-items:baseline;gap:8px}
+  .brand .mark{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  .brand .app{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  header .today{font-size:12px;color:var(--muted);font-family:var(--mono)}
+
+  /* ---- signature: the receipt tape ---- */
+  .tape{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);padding:16px 16px 14px;margin-bottom:10px}
+  .tline{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0}
+  .tline span{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .tline b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:500;font-size:16px;color:var(--bone)}
+  .tline.pend b{color:var(--brass)}
+  .tline.pend span{color:var(--brass)}
+  .trule{height:1px;background:var(--edge);margin:9px 0 7px}
+  .tline.total span{color:var(--bone);font-weight:700;font-size:12px}
+  .tline.total b{font-size:34px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+  .tline.total b.neg{color:var(--coral)}
+  .tape .why{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4}
+
+  /* ---- free to spend ---- */
+  .free{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
+  .free .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .free .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:26px;font-weight:600;margin:3px 0 2px;color:var(--mint)}
+  .free .v.bad{color:var(--coral)}
+  .free .n{font-size:12px;color:var(--muted)}
+  .spark{margin-top:10px;display:block}
+
+  /* ---- generic card ---- */
+  .card{background:var(--panel);border:1px solid var(--edge);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+  .card > h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+    padding:13px 15px;border-bottom:1px solid var(--edge-soft);font-weight:700}
+  .card .sub{padding:11px 15px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--edge-soft)}
+  .empty{padding:22px 16px;text-align:center;color:var(--muted);font-size:14px;line-height:1.5}
+
+  /* ---- rows ---- */
+  .row{display:flex;align-items:center;gap:11px;padding:11px 15px;border-bottom:1px solid var(--edge-soft)}
+  .row:last-child{border-bottom:none}
+  .row .body{flex:1;min-width:0}
+  .row .t{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .s{font-size:12px;color:var(--muted);margin-top:1px}
+  .row .amt{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:15px;font-weight:600;flex:none}
+  .amt.out{color:var(--coral)} .amt.in{color:var(--mint)}
+  .mhead{padding:8px 15px;background:var(--panel2);font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);font-weight:700}
+
+  /* pending flag */
+  .flag{display:inline-block;font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+    color:var(--brass);border:1px solid rgba(214,163,74,.4);background:rgba(214,163,74,.1);
+    border-radius:5px;padding:1px 5px;margin-left:6px}
+  .tick{flex:none;width:34px;height:34px;border-radius:9px;border:1px solid var(--edge);
+    background:var(--panel2);color:var(--muted);font-size:14px}
+  .tick.on{background:var(--mint);border-color:var(--mint);color:var(--ink)}
+
+  /* ---- forecast ledger ---- */
+  .day{display:flex;gap:10px;padding:9px 15px;border-bottom:1px solid var(--edge-soft)}
+  .day:last-child{border-bottom:none}
+  .day.short{background:rgba(232,123,104,.07);box-shadow:inset 3px 0 0 var(--coral)}
+  .day.pay{box-shadow:inset 3px 0 0 var(--mint)}
+  .day .dt{flex:none;width:50px}
+  .day .dt .w{font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:.06em}
+  .day .dt .d{font-family:var(--mono);font-size:14px;font-weight:600}
+  .day .ev{flex:1;min-width:0}
+  .pill{display:inline-block;font-size:11.5px;border-radius:6px;padding:1px 6px;margin:1px 4px 1px 0;
+    background:var(--panel2);border:1px solid var(--edge);color:var(--bone)}
+  .pill.in{background:rgba(99,214,160,.12);border-color:rgba(99,214,160,.35);color:var(--mint)}
+  .pill b{font-family:var(--mono);font-weight:600}
+  .day .bal{flex:none;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;
+    font-size:14px;font-weight:600}
+  .day .bal.neg{color:var(--coral)}
+
+  /* ---- category bars ---- */
+  .cat{padding:9px 15px;border-bottom:1px solid var(--edge-soft)}
+  .cat:last-child{border-bottom:none}
+  .cat .l{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+  .cat .l b{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+  .bar{height:5px;background:var(--panel2);border-radius:3px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--brass);border-radius:3px}
+
+  /* ---- buttons & forms ---- */
+  .act{display:block;width:100%;padding:13px;background:none;border:none;color:var(--mint);
+    font-size:15px;font-weight:700;font-family:inherit;border-top:1px solid var(--edge-soft)}
+  .btn{padding:12px;border-radius:10px;border:1px solid var(--edge);font-size:15px;font-weight:700;
+    font-family:inherit;background:var(--panel2);color:var(--bone)}
+  .btn.go{background:var(--mint);border-color:var(--mint);color:#0C1A14}
+  .btn.warn{background:none;border:none;color:var(--coral);font-weight:600;width:100%;padding:13px}
+  .btns{display:flex;gap:8px;padding-top:2px}
+  .btns .btn{flex:1}
+  .form{padding:13px 15px;background:var(--panel2);border-bottom:1px solid var(--edge-soft)}
+  .fr{margin-bottom:10px}
+  .fr label{display:block;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:5px}
+  input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--edge);border-radius:9px;
+    font-size:16px;background:var(--ink);color:var(--bone);font-family:inherit;-webkit-appearance:none}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--mint);outline-offset:1px}
+  textarea{font-family:var(--mono);font-size:12px;min-height:120px;resize:vertical}
+  .seg{display:flex;gap:6px}
+  .seg button{flex:1;padding:11px;border-radius:9px;border:1px solid var(--edge);background:var(--ink);
+    color:var(--muted);font-size:14px;font-weight:700;font-family:inherit}
+  .seg button.on{background:var(--panel);border-color:var(--mint);color:var(--mint)}
+  .inline{display:flex;gap:8px}.inline > *{flex:1}
+  .check{display:flex;align-items:center;gap:9px;padding:10px 0;font-size:14px;color:var(--bone)}
+  .check input{width:20px;height:20px;flex:none;accent-color:var(--mint)}
+
+  /* ---- privacy panel ---- */
+  .priv{background:linear-gradient(180deg,rgba(214,163,74,.09),transparent);
+    border:1px solid rgba(214,163,74,.3);border-radius:var(--r);padding:15px;margin-bottom:10px}
+  .priv .h{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  .priv p{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.5}
+  .priv .stat{font-size:13px;color:var(--bone);margin-top:9px;font-weight:600}
+
+  /* ---- bottom nav ---- */
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(15,21,24,.96);
+    border-top:1px solid var(--edge);display:flex;padding-bottom:env(safe-area-inset-bottom);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  nav button{flex:1;padding:10px 1px 11px;background:none;border:none;color:var(--muted);
+    font-family:inherit;font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  nav button .ic{display:block;font-size:16px;margin-bottom:3px;line-height:1}
+  nav button.on{color:var(--mint)}
+
+  /* ---- guide ---- */
+  .g{padding:15px}
+  .g h3{font-size:15px;font-weight:700;color:var(--bone);margin-bottom:7px}
+  .g p{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:10px}
+  .g p b{color:var(--bone);font-weight:600}
+  .g ol{margin:0 0 10px 18px}.g ul{margin:0 0 10px 18px}
+  .g li{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:6px}
+  .g li b{color:var(--bone);font-weight:600}
+  .eg{background:var(--ink);border:1px solid var(--edge);border-left:3px solid var(--brass);
+    border-radius:8px;padding:11px 13px;margin:10px 0}
+  .eg .egh{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--brass);
+    font-weight:700;margin-bottom:6px}
+  .eg p{font-size:13.5px;color:var(--bone);margin-bottom:6px;line-height:1.55}
+  .eg p:last-child{margin-bottom:0}
+  .eg code{font-family:var(--mono);font-size:12.5px;color:var(--mint);background:rgba(99,214,160,.09);
+    padding:1px 5px;border-radius:4px}
+
+  /* ---- backup warning ---- */
+  .warnbar{background:rgba(232,123,104,.11);border:1px solid rgba(232,123,104,.4);
+    border-radius:var(--r);padding:13px 15px;margin-bottom:10px}
+  .warnbar .h{font-size:13px;font-weight:700;color:var(--coral)}
+  .warnbar p{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.5}
+  .filebtn{position:relative;overflow:hidden;display:block}
+  .filebtn input[type=file]{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+
+  .hide{display:none}
+  .toast{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);background:var(--bone);
+    color:var(--ink);padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;
+    transition:opacity .25s;pointer-events:none;z-index:60;max-width:90%;text-align:center}
+  .toast.show{opacity:1}
+  #boot{padding:70px 0;text-align:center;color:var(--muted)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="mark">XY Digital Media</span><span class="app">Ledger</span></div>
+    <div class="today" id="todayLbl"></div>
+  </header>
+
+  <div id="boot">Opening your ledger…</div>
+
+  <main id="app" class="hide">
+    <!-- ============ TODAY ============ -->
+    <section id="pgToday">
+      <div class="tape">
+        <div class="tline"><span>Bank says</span><b class="mono" id="tBank">0.00</b></div>
+        <div class="tline pend"><span id="tPendLbl">Not yet cleared</span><b class="mono" id="tPend">0.00</b></div>
+        <div class="trule"></div>
+        <div class="tline total"><span>Available</span><b class="mono" id="tAvail">0.00</b></div>
+        <div class="why" id="tWhy"></div>
+      </div>
+
+      <div class="free">
+        <div class="k" id="fLbl">Free to spend</div>
+        <div class="v mono" id="fVal">0.00</div>
+        <div class="n" id="fNote"></div>
+        <svg class="spark" id="spark" width="100%" height="42" viewBox="0 0 320 42" preserveAspectRatio="none"></svg>
+      </div>
+
+      <div class="card">
+        <h2>Update from your bank</h2>
+        <div class="form">
+          <div class="inline">
+            <input type="number" step="0.01" inputmode="decimal" id="bkAmt" placeholder="Balance shown">
+            <button class="btn go" style="flex:0 0 92px" id="bkSet">Update</button>
+          </div>
+          <div class="n" style="font-size:11px;color:var(--muted);margin-top:8px">
+            Type what your bank shows right now. Anything you logged that hasn't cleared stays subtracted.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Coming up</h2>
+        <div id="upcoming"></div>
+      </div>
+
+      <div class="card">
+        <h2>Next 60 days</h2>
+        <div id="ledger"></div>
+      </div>
+    </section>
+
+    <!-- ============ ACTIVITY ============ -->
+    <section id="pgAct" class="hide">
+      <div class="card">
+        <h2>Log something</h2>
+        <div id="txForm" class="hide"></div>
+        <button class="act" id="addOut">− Add an expense</button>
+        <button class="act" id="addIn">+ Add money in</button>
+      </div>
+
+      <div class="card" id="pendCard">
+        <h2>Not yet at the bank</h2>
+        <div class="sub">These are already subtracted from Available. Tap the check when one shows up on your statement.</div>
+        <div id="pendList"></div>
+      </div>
+
+      <div class="card">
+        <h2 id="catTitle">This month by category</h2>
+        <div id="catList"></div>
+      </div>
+
+      <div class="card">
+        <h2>History</h2>
+        <div id="histList"></div>
+      </div>
+    </section>
+
+    <!-- ============ PLAN ============ -->
+    <section id="pgPlan" class="hide">
+      <div class="card">
+        <h2>Money coming in</h2>
+        <div id="incForm" class="hide"></div>
+        <div id="incList"></div>
+        <div class="row" style="background:var(--panel2)">
+          <div class="body"><div class="t" style="font-size:13px">Per month</div></div>
+          <div class="amt in mono" id="incTot">0.00</div>
+        </div>
+        <button class="act" id="incAdd">+ Add income</button>
+      </div>
+
+      <div class="card">
+        <h2>Recurring bills</h2>
+        <div id="billForm" class="hide"></div>
+        <div id="billList"></div>
+        <div class="row" style="background:var(--panel2)">
+          <div class="body"><div class="t" style="font-size:13px">Per month</div></div>
+          <div class="amt out mono" id="billTot">0.00</div>
+        </div>
+        <button class="act" id="billAdd">+ Add bill</button>
+      </div>
+
+      <div class="card">
+        <h2>Left over each month</h2>
+        <div class="row"><div class="body"><div class="t" id="netLbl">—</div>
+          <div class="s">Income minus recurring bills. One-off spending isn't counted here.</div></div>
+          <div class="amt mono" id="netVal">0.00</div></div>
+      </div>
+    </section>
+
+    <!-- ============ GUIDE ============ -->
+    <section id="pgGuide" class="hide">
+      <div class="card">
+        <h2>Start here</h2>
+        <div class="g">
+          <p>Three things get you running. Everything else is optional.</p>
+          <ol>
+            <li>On <b>Today</b>, type the balance your bank shows right now and tap Update.</li>
+            <li>On <b>Plan</b>, add your paycheque and your regular bills.</li>
+            <li>On <b>Activity</b>, log things as you spend them.</li>
+          </ol>
+          <p>That's it. The forecast builds itself from there.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>The three numbers on Today</h2>
+        <div class="g">
+          <p><b>Bank says</b> — the last balance you typed in. It only changes when you update it.</p>
+          <p><b>Not yet cleared</b> — things you've logged that haven't hit your account yet. Card
+             charges take days to post, and cash never posts at all.</p>
+          <p><b>Available</b> — the first minus the second. This is your real money, and it's the number
+             to trust. Your bank will usually show more than this, because your bank doesn't know about
+             the coffee you bought an hour ago.</p>
+          <p><b>Free to spend before payday</b> is different again. It's the lowest your balance gets
+             before more money arrives, so it's what you can spend today without coming up short later.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Logging what you spend</h2>
+        <div class="g">
+          <p>Tap <b>Activity → Add an expense</b>. Name it, put in the amount, pick the day it happened,
+             and choose a category.</p>
+          <p>Leave the tick box <b>empty</b> if it hasn't shown up at your bank yet — which is almost
+             always the case right after you spend. It comes straight off Available so you don't
+             accidentally spend the same money twice.</p>
+          <p>You can date it in the past. Bought lunch with cash on Tuesday and forgot? Log it Thursday,
+             dated Tuesday. It still comes off your balance, because your bank never saw it.</p>
+          <p>When it finally appears on your statement, go to <b>Not yet at the bank</b> and tap the
+             green tick. It moves to history and your balance doesn't change — it was already counted.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Things that start and stop</h2>
+        <div class="g">
+          <p>This is what the app is really for. Every bill and every income can have a
+             <b>Starts on</b> and an <b>Ends on</b> date. You never have to remember to come back
+             and change something — set it once and the forecast handles the switch on its own.</p>
+
+          <div class="eg">
+            <div class="egh">You're getting a raise in October</div>
+            <p>Don't edit your current pay. Instead:</p>
+            <p>1. Open your existing pay and set <code>Ends on</code> to your last cheque at the old rate.</p>
+            <p>2. Add a new income at the new amount with <code>Starts on</code> set to the first
+               cheque at the new rate.</p>
+            <p>Your forecast now steps up on exactly the right day, and October onward reflects the raise
+               while September still reflects reality.</p>
+          </div>
+
+          <div class="eg">
+            <div class="egh">Paying double on a credit card for six months</div>
+            <p>1. Open the card payment and set <code>Ends on</code> to the last normal payment.</p>
+            <p>2. Add a second bill at the doubled amount, <code>Starts on</code> the following month,
+               <code>Ends on</code> six months later.</p>
+            <p>3. Add a third at the normal amount starting after that, if it carries on.</p>
+            <p>Now you can see exactly what those six lean months look like before you commit to them —
+               and whether you can actually afford it.</p>
+          </div>
+
+          <div class="eg">
+            <div class="egh">Rent is going up</div>
+            <p>Same shape. End the old rent on its last payment, add the new amount starting the month
+               it kicks in. Both sit in your list so you can see the handover.</p>
+          </div>
+
+          <div class="eg">
+            <div class="egh">A loan that finishes</div>
+            <p>Just set <code>Ends on</code> to the final payment date. It disappears from the forecast
+               after that, and you'll see your breathing room widen on the day it clears.</p>
+          </div>
+
+          <div class="eg">
+            <div class="egh">A one-off you know about — insurance, a flight, Christmas</div>
+            <p>Add it as a bill and choose <code>One time</code>, then pick the date. It shows up once
+               in the forecast and tells you what your balance looks like on the other side of it.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>How often each option means</h2>
+        <div class="g">
+          <ul>
+            <li><b>Every day</b> — food, coffee, cigarettes. Small things that add up.</li>
+            <li><b>Every week</b> — pick the weekday.</li>
+            <li><b>Every 2 weeks</b> — pick the next date it lands, and it counts forward from there.</li>
+            <li><b>Twice a month</b> — two days of your choosing, like the 1st and 15th. Rent split in two.</li>
+            <li><b>Every month</b> — one day of the month.</li>
+            <li><b>Every 2 months</b> — for bills like water that only come every other month.</li>
+            <li><b>One time</b> — a single dated event.</li>
+          </ul>
+          <p>If you pick a day that doesn't exist in a short month — the 31st in February — it falls on
+             the last day of that month instead.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Reading the forecast</h2>
+        <div class="g">
+          <p>Every day for the next 60 days, with what's due and your balance after it.</p>
+          <ul>
+            <li>A <b>green edge</b> means money arrives that day.</li>
+            <li>A <b>red row</b> means you'd go below zero. That's a warning you can act on weeks early.</li>
+          </ul>
+          <p>If something you've already logged matches a scheduled bill on the same day, the app skips
+             the scheduled one so it isn't counted twice.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Keep a backup</h2>
+        <div class="g">
+          <p>Your data lives on this device and nowhere else. That's the privacy promise — but it means
+             there's no copy to fall back on if the device is lost or the browser data is cleared.</p>
+          <p>Go to <b>Privacy → Save a backup file</b> every few weeks. Save it to iCloud Drive or
+             anywhere you keep files. Restoring takes one tap.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SETTINGS ============ -->
+    <section id="pgSet" class="hide">
+      <div class="priv">
+        <div class="h">Private by design</div>
+        <p>This ledger has no accounts, no sign-in, and no servers. It makes no network requests at all —
+           not for fonts, not for analytics, not for anything. Your numbers are stored on this device only.</p>
+        <div class="stat" id="privStat"></div>
+      </div>
+
+      <div id="backupWarn"></div>
+
+      <div class="card">
+        <h2>Backup</h2>
+        <div class="sub" id="backupAge">Your data is on this device only. A backup file is the only
+          copy that survives a lost phone or cleared browser.</div>
+        <div class="form">
+          <button class="btn go" style="width:100%" id="dlBtn">Save a backup file</button>
+          <label class="filebtn btn" style="width:100%;text-align:center;margin-top:8px">
+            Restore from a backup file
+            <input type="file" id="upFile" accept=".json,application/json,text/plain">
+          </label>
+          <div style="font-size:11px;color:var(--muted);margin-top:9px;line-height:1.5">
+            The file saves to wherever your device puts downloads — on iPhone, tap Save to Files and
+            pick iCloud Drive so it's safe even if you lose the phone.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Move to another device</h2>
+        <div class="sub">Or copy your ledger as plain text and paste it into this same box on another
+          device.</div>
+        <div class="form">
+          <textarea id="dataBox" spellcheck="false" placeholder="Tap Show my data"></textarea>
+          <div class="btns" style="margin-top:9px">
+            <button class="btn" id="expBtn">Show my data</button>
+            <button class="btn go" id="impBtn">Load pasted data</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Start over</h2>
+        <div class="sub">Erases every transaction, bill, and balance on this device. There's no copy anywhere else,
+          so export first if you might want it back.</div>
+        <button class="btn warn" id="wipeBtn">Erase everything</button>
+      </div>
+
+      <div class="card">
+        <h2>About</h2>
+        <div class="row"><div class="body"><div class="t">Ledger</div>
+          <div class="s">Version 2 · XY Digital Media</div></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav>
+  <button id="nvToday" class="on"><span class="ic">▤</span>Today</button>
+  <button id="nvAct"><span class="ic">↹</span>Activity</button>
+  <button id="nvPlan"><span class="ic">◷</span>Plan</button>
+  <button id="nvGuide"><span class="ic">?</span>Guide</button>
+  <button id="nvSet"><span class="ic">⚙</span>Privacy</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= helpers ================= */
+var $ = function(id){ return document.getElementById(id); };
+var DOW  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var DOWS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+var MON  = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var CATS = ["Food","Groceries","Gas","Rent","Bills","Car","Health","Fun","Shopping","Debt","Other"];
+
+function n2(v){ return Math.abs(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function money(v){ return (v < -0.004 ? "\u2212$" : "$") + n2(v); }
+function signed(v){ return (v < 0 ? "\u2212" : "+") + n2(v); }
+function iso(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function parseISO(s){ var p = String(s).split("-"); return new Date(+p[0], +p[1]-1, +p[2]); }
+function addDays(d,n){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()+n); }
+function dim(d){ return new Date(d.getFullYear(), d.getMonth()+1, 0).getDate(); }
+function today(){ var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function nice(ds){ var d = parseISO(ds); return DOWS[d.getDay()]+" "+MON[d.getMonth()]+" "+d.getDate(); }
+
+function toast(m){
+  var t = $("toast"); t.textContent = m; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(function(){ t.classList.remove("show"); }, 2000);
+}
+
+/* ================= starting data ================= */
+function defaults(){
+  return {
+    v: 4,
+    bank: { balance: 979.00, date: "2026-08-26" },
+    txns: [],
+    incomes: [
+      {id:uid(), name:"Weekly pay", amount:959.65,  freq:"weekly", dow:3, start:"2026-08-26", end:"2026-09-02"},
+      {id:uid(), name:"Pay orig",   amount:1279.55, freq:"weekly", dow:3, start:"2026-09-09", end:"2027-02-10"}
+    ],
+    bills: [
+      {id:uid(), name:"Rent",              amount:419.60, freq:"twicemonth", dom:1, dom2:15, cat:"Rent",   start:"2026-09-01", end:"2026-09-16"},
+      {id:uid(), name:"New Rent",          amount:835.00, freq:"twicemonth", dom:1, dom2:15, cat:"Rent",   start:"2026-10-01", end:"2027-01-07"},
+      {id:uid(), name:"Car insurance",     amount:214.31, freq:"monthly", dom:5,  cat:"Car",      start:"2026-08-26", end:"2027-02-10"},
+      {id:uid(), name:"Credit card",       amount:300.00, freq:"monthly", dom:15, cat:"Debt",     start:"2026-08-26", end:"2026-11-25"},
+      {id:uid(), name:"Power",             amount:161.65, freq:"monthly", dom:5,  cat:"Bills",    start:"2026-08-26", end:"2027-01-27"},
+      {id:uid(), name:"Internet",          amount:104.00, freq:"monthly", dom:11, cat:"Bills",    start:"2026-08-26", end:"2026-12-30"},
+      {id:uid(), name:"Water",             amount:69.74,  freq:"monthly", dom:28, cat:"Bills",    start:"2026-08-26", end:"2027-02-24"},
+      {id:uid(), name:"Big Tuna Car Wash", amount:39.95,  freq:"monthly", dom:24, cat:"Car",      start:"2026-08-26", end:"2026-12-30"},
+      {id:uid(), name:"Kickoff Credit",    amount:35.00,  freq:"monthly", dom:29, cat:"Debt",     start:"2026-08-26", end:"2026-12-30"},
+      {id:uid(), name:"Gas (utility)",     amount:34.82,  freq:"monthly", dom:8,  cat:"Bills",    start:"2026-08-26", end:"2026-12-30"},
+      {id:uid(), name:"Cell Phone",        amount:33.38,  freq:"monthly", dom:2,  cat:"Bills",    start:"2026-08-26", end:"2026-12-30"},
+      {id:uid(), name:"Chatgpt",           amount:21.60,  freq:"monthly", dom:25, cat:"Fun",      start:"2026-08-26", end:"2026-12-30"},
+      {id:uid(), name:"AD&D insurance",    amount:20.00,  freq:"monthly", dom:6,  cat:"Health",   start:"2026-08-26", end:"2026-12-30"},
+      {id:uid(), name:"Claude",            amount:20.00,  freq:"monthly", dom:21, cat:"Fun",      start:"2026-08-26", end:"2027-01-27"},
+      {id:uid(), name:"Prime",             amount:16.19,  freq:"monthly", dom:13, cat:"Fun",      start:"2026-08-26", end:"2027-01-27"},
+      {id:uid(), name:"Cashapp",           amount:100.00, freq:"weekly",  dow:3,  cat:"Other",    start:"2026-08-27", end:"2026-12-31"},
+      {id:uid(), name:"Beer (daily)",      amount:15.00,  freq:"daily",           cat:"Fun",      start:"2026-08-26", end:"2026-12-30"},
+      {id:uid(), name:"Food (daily)",      amount:10.00,  freq:"daily",           cat:"Food",     start:"2026-08-26", end:"2026-12-30"}
+    ]
+  };
+}
+
+/* ================= storage (device only) ================= */
+var KEY = "xy-ledger-v4", OLD = "money-left-v3";
+var state = null, backend = "none", saveT = null;
+
+function hasLocal(){
+  try{ localStorage.setItem("__p","1"); localStorage.removeItem("__p"); return true; }catch(e){ return false; }
+}
+function migrate(prev){
+  var s = defaults();
+  if (typeof prev.balance === "number") s.bank.balance = prev.balance;
+  if (prev.balanceDate) s.bank.date = prev.balanceDate;
+  if (prev.incomes && prev.incomes.length) s.incomes = prev.incomes;
+  if (prev.bills && prev.bills.length) s.bills = prev.bills;
+  return s;
+}
+function load(){
+  if (window.storage){
+    backend = "claude";
+    return window.storage.get(KEY).then(function(r){
+      if (r && r.value) return JSON.parse(r.value);
+      throw 0;
+    }).catch(function(){
+      return window.storage.get(OLD).then(function(o){
+        return (o && o.value) ? migrate(JSON.parse(o.value)) : defaults();
+      }).catch(function(){ return defaults(); });
+    }).then(function(s){ state = normalize(s); save(); });
+  }
+  if (hasLocal()){
+    backend = "local";
+    try{
+      var v = localStorage.getItem(KEY);
+      if (v){ state = normalize(JSON.parse(v)); return Promise.resolve(); }
+      var o = localStorage.getItem(OLD);
+      if (o){ state = normalize(migrate(JSON.parse(o))); save(); return Promise.resolve(); }
+    }catch(e){}
+  }
+  state = defaults(); save();
+  return Promise.resolve();
+}
+function normalize(s){
+  s = s || {};
+  if (!s.bank) s.bank = { balance: 0, date: iso(today()) };
+  if (typeof s.bank.balance !== "number") s.bank.balance = 0;
+  if (!s.bank.date) s.bank.date = iso(today());
+  if (!Array.isArray(s.txns))    s.txns = [];
+  if (!Array.isArray(s.incomes)) s.incomes = [];
+  if (!Array.isArray(s.bills))   s.bills = [];
+  s.txns.forEach(function(t){
+    if (!t.id) t.id = uid();
+    t.amount = Number(t.amount) || 0;
+    if (typeof t.cleared !== "boolean") t.cleared = false;
+  });
+  s.v = 4;
+  return s;
+}
+function save(){
+  if (backend === "none") return;
+  clearTimeout(saveT);
+  saveT = setTimeout(function(){
+    var json = JSON.stringify(state);
+    try{
+      if (backend === "claude"){
+        window.storage.set(KEY, json).then(function(r){ if(!r) toast("Couldn't save"); },
+                                           function(){ toast("Couldn't save"); });
+      } else {
+        localStorage.setItem(KEY, json);
+      }
+    }catch(e){ toast("Couldn't save"); }
+  }, 300);
+}
+
+/* ================= schedule maths ================= */
+function occurs(r, d){
+  var ds = iso(d);
+  if (r.start && ds < r.start) return false;
+  if (r.end   && ds > r.end)   return false;
+  switch(r.freq){
+    case "daily":  return true;
+    case "weekly": return d.getDay() === (r.dow == null ? 0 : r.dow);
+    case "biweekly": {
+      if (!r.anchor) return false;
+      var diff = Math.round((d - parseISO(r.anchor)) / 86400000);
+      return ((diff % 14) + 14) % 14 === 0;
+    }
+    case "twicemonth": {
+      var m = dim(d), dd = d.getDate();
+      return dd === Math.min(r.dom || 1, m) || dd === Math.min(r.dom2 || 15, m);
+    }
+    case "monthly": return d.getDate() === Math.min(r.dom || 1, dim(d));
+    case "bimonthly": {
+      if (!r.anchor) return false;
+      var a = parseISO(r.anchor);
+      var md = (d.getFullYear()-a.getFullYear())*12 + (d.getMonth()-a.getMonth());
+      if (((md % 2) + 2) % 2 !== 0) return false;
+      return d.getDate() === Math.min(a.getDate(), dim(d));
+    }
+    case "once": return r.date === ds;
+  }
+  return false;
+}
+function perMonth(r){
+  var t = iso(today());
+  if (r.start && r.start > t) return 0;
+  if (r.end   && r.end   < t) return 0;
+  switch(r.freq){
+    case "daily":      return r.amount * 30.44;
+    case "weekly":     return r.amount * 52 / 12;
+    case "biweekly":   return r.amount * 26 / 12;
+    case "twicemonth": return r.amount * 2;
+    case "monthly":    return r.amount;
+    case "bimonthly":  return r.amount / 2;
+  }
+  return 0;
+}
+function freqLabel(r){
+  var s;
+  switch(r.freq){
+    case "daily":      s = "Every day"; break;
+    case "weekly":     s = "Weekly \u00b7 " + DOW[r.dow == null ? 0 : r.dow]; break;
+    case "biweekly":   s = "Every 2 weeks"; break;
+    case "twicemonth": s = "Twice a month \u00b7 " + (r.dom||1) + " & " + (r.dom2||15); break;
+    case "monthly":    s = "Monthly \u00b7 day " + (r.dom||1); break;
+    case "bimonthly":  s = "Every 2 months"; break;
+    case "once":       s = "One time \u00b7 " + (r.date||""); break;
+    default: s = "";
+  }
+  if (r.cat) s = r.cat + " \u00b7 " + s;
+  if (r.end) s += " \u00b7 ends " + r.end;
+  return s;
+}
+
+/* ================= the core numbers ================= */
+/* Anything the bank hasn't counted yet reduces what you can actually spend:
+   - pending items, whatever their date
+   - cleared items dated after the bank snapshot                       */
+function pendingTotal(){
+  var anchor = state.bank.date, sum = 0;
+  state.txns.forEach(function(t){
+    if (!t.cleared || t.date > anchor) sum += t.amount;
+  });
+  return sum;  /* negative = money out */
+}
+function available(){ return state.bank.balance + pendingTotal(); }
+function uncounted(){
+  var anchor = state.bank.date;
+  return state.txns.filter(function(t){ return !t.cleared || t.date > anchor; });
+}
+
+/* Forecast forward. Skips a scheduled bill on any day you already logged
+   a transaction by that name, so nothing gets counted twice. */
+function forecast(days){
+  var t = today(), bal = available(), rows = [], logged = {};
+  state.txns.forEach(function(x){ logged[x.date + "|" + x.name.toLowerCase()] = true; });
+
+  for (var i = 0; i < days; i++){
+    var d = addDays(t, i), ds = iso(d), ins = [], outs = [];
+    state.incomes.forEach(function(r){
+      if (r.amount > 0 && occurs(r,d) && !logged[ds + "|" + r.name.toLowerCase()]) ins.push(r);
+    });
+    state.bills.forEach(function(r){
+      if (r.amount > 0 && occurs(r,d) && !logged[ds + "|" + r.name.toLowerCase()]) outs.push(r);
+    });
+    var inS = 0, outS = 0;
+    ins.forEach(function(r){ inS += r.amount; });
+    outs.forEach(function(r){ outS += r.amount; });
+    bal += inS - outS;
+    rows.push({ date:d, ins:ins, outs:outs, net:inS-outS, bal:bal });
+  }
+  return rows;
+}
+/* What's genuinely free: the lowest your balance gets before more money arrives. */
+function freeToSpend(rows){
+  var payIdx = -1;
+  for (var i = 1; i < rows.length; i++){ if (rows[i].ins.length){ payIdx = i; break; } }
+  var last = payIdx > 0 ? payIdx - 1 : Math.min(13, rows.length - 1);
+  var lo = Infinity;
+  for (var j = 0; j <= last; j++) if (rows[j].bal < lo) lo = rows[j].bal;
+  return { amount: lo, until: rows[Math.min(last+1, rows.length-1)].date, hasPay: payIdx > 0 };
+}
+
+/* ================= backups ================= */
+function daysSince(ds){
+  if (!ds) return null;
+  return Math.floor((today() - parseISO(ds)) / 86400000);
+}
+function downloadBackup(){
+  var json = JSON.stringify(state, null, 1);
+  var name = "ledger-backup-" + iso(today()) + ".json";
+  try{
+    var blob = new Blob([json], {type:"application/json"});
+    var url  = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+    state.lastBackup = iso(today());
+    save(); render();
+    toast("Backup saved \u00b7 keep it somewhere safe");
+  }catch(e){
+    $("dataBox").value = json;
+    toast("Couldn't download here \u2014 copy the text below instead");
+  }
+}
+function restoreFile(file){
+  if (!file) return;
+  var fr = new FileReader();
+  fr.onload = function(){
+    try{
+      var s = normalize(JSON.parse(String(fr.result)));
+      state = s; save(); render(); tab("Today");
+      toast("Backup restored");
+    }catch(e){ toast("That file isn't a ledger backup"); }
+  };
+  fr.onerror = function(){ toast("Couldn't read that file"); };
+  fr.readAsText(file);
+}
+function backupBanner(){
+  var age = daysSince(state.lastBackup), box = $("backupWarn"), sub = $("backupAge");
+  if (age === null){
+    box.innerHTML = '<div class="warnbar"><div class="h">No backup yet</div>' +
+      '<p>Everything you\'ve entered exists in one place. Save a backup file and you\'re covered ' +
+      'if this device is lost or the browser data gets cleared.</p></div>';
+    sub.textContent = "You haven't saved a backup yet.";
+  } else if (age > 21){
+    box.innerHTML = '<div class="warnbar"><div class="h">Backup is ' + age + ' days old</div>' +
+      '<p>Anything you\'ve entered since then isn\'t saved anywhere else.</p></div>';
+    sub.textContent = "Last backup: " + nice(state.lastBackup) + " (" + age + " days ago).";
+  } else {
+    box.innerHTML = "";
+    sub.textContent = age === 0 ? "Backed up today."
+      : "Last backup: " + nice(state.lastBackup) + " (" + age + " day" + (age>1?"s":"") + " ago).";
+  }
+}
+
+/* ================= rendering ================= */
+function render(){
+  var t = today();
+  $("todayLbl").textContent = DOWS[t.getDay()] + " " + MON[t.getMonth()] + " " + t.getDate();
+
+  /* --- the tape --- */
+  var pend = pendingTotal(), avail = available(), un = uncounted();
+  $("tBank").textContent = n2(state.bank.balance);
+  $("tPendLbl").textContent = un.length ? ("Not yet cleared (" + un.length + ")") : "Not yet cleared";
+  $("tPend").textContent = (pend < 0 ? "\u2212" : pend > 0 ? "+" : "") + n2(pend);
+  var av = $("tAvail");
+  av.textContent = (avail < -0.004 ? "\u2212" : "") + "$" + n2(avail);
+  av.className = "mono" + (avail < -0.004 ? " neg" : "");
+  $("tWhy").textContent = un.length
+    ? "Your bank last showed " + money(state.bank.balance) + " on " + nice(state.bank.date) +
+      ". " + un.length + " thing" + (un.length>1?"s haven't":" hasn't") + " hit the account yet."
+    : "Your bank last showed " + money(state.bank.balance) + " on " + nice(state.bank.date) + ". Nothing outstanding.";
+
+  /* --- free to spend --- */
+  var rows = forecast(60), f = freeToSpend(rows);
+  var fv = $("fVal"), amt = Math.max(0, f.amount);
+  $("fLbl").textContent = f.hasPay ? "Free to spend before payday" : "Free to spend over 2 weeks";
+  fv.textContent = money(amt);
+  fv.className = "v mono" + (f.amount < -0.004 ? " bad" : "");
+  $("fNote").textContent = f.amount < -0.004
+    ? "You come up " + money(f.amount) + " short around " +
+      nice(iso(lowDate(rows, f))) + ". Spending anything today makes that worse."
+    : "That's what's left after every bill due before " + nice(iso(f.until)) + ".";
+  spark(rows.slice(0, 30));
+
+  upcoming(rows);
+  ledger(rows);
+  pendingList();
+  categories();
+  history();
+  rules("inc"); rules("bill");
+
+  var inM = 0, outM = 0;
+  state.incomes.forEach(function(r){ inM += perMonth(r); });
+  state.bills.forEach(function(r){ outM += perMonth(r); });
+  $("incTot").textContent  = "+" + n2(inM);
+  $("billTot").textContent = "\u2212" + n2(outM);
+  var net = inM - outM, nv = $("netVal");
+  nv.textContent = signed(net);
+  nv.className = "amt mono " + (net < 0 ? "out" : "in");
+  $("netLbl").textContent = net < 0 ? "You're overcommitted" : "Breathing room";
+
+  backupBanner();
+  $("privStat").textContent = backend === "none"
+    ? "\u26a0 This viewer won't keep changes. Open the file in a browser."
+    : "\u2713 Saved on this device only \u00b7 " + state.txns.length + " transactions logged";
+}
+function lowDate(rows, f){
+  for (var i = 0; i < rows.length; i++) if (Math.abs(rows[i].bal - f.amount) < 0.005) return rows[i].date;
+  return rows[0].date;
+}
+
+function spark(rows){
+  var svg = $("spark");
+  if (!rows.length){ svg.innerHTML = ""; return; }
+  var W = 320, H = 42, P = 3, vals = rows.map(function(r){ return r.bal; });
+  var mx = Math.max.apply(null, vals.concat([0])), mn = Math.min.apply(null, vals.concat([0]));
+  var span = (mx - mn) || 1;
+  var y = function(v){ return P + (H - 2*P) * (1 - (v - mn)/span); };
+  var x = function(i){ return P + (W - 2*P) * (rows.length === 1 ? 0 : i/(rows.length-1)); };
+  var p = "";
+  rows.forEach(function(r,i){ p += (i ? " L " : "M ") + x(i).toFixed(1) + " " + y(r.bal).toFixed(1); });
+  var z = y(0).toFixed(1);
+  svg.innerHTML =
+    '<line x1="0" y1="'+z+'" x2="'+W+'" y2="'+z+'" stroke="#E87B68" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>' +
+    '<path d="'+p+'" fill="none" stroke="#63D6A0" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+}
+
+function upcoming(rows){
+  var box = $("upcoming"), out = [];
+  for (var i = 0; i < Math.min(7, rows.length); i++){
+    var r = rows[i];
+    r.outs.forEach(function(b){ out.push({d:r.date, name:b.name, amt:-b.amount, cat:b.cat}); });
+    r.ins.forEach(function(b){  out.push({d:r.date, name:b.name, amt:b.amount,  cat:"Income"}); });
+  }
+  if (!out.length){ box.innerHTML = '<div class="empty">Nothing scheduled in the next 7 days.</div>'; return; }
+  box.innerHTML = out.map(function(o){
+    return '<div class="row"><div class="body"><div class="t">'+esc(o.name)+'</div>' +
+      '<div class="s">'+DOWS[o.d.getDay()]+" "+MON[o.d.getMonth()]+" "+o.d.getDate()+
+      (o.cat ? " \u00b7 " + esc(o.cat) : "")+'</div></div>' +
+      '<div class="amt mono '+(o.amt<0?"out":"in")+'">'+signed(o.amt)+'</div></div>';
+  }).join("");
+}
+
+function ledger(rows){
+  var h = "", lastM = -1;
+  rows.forEach(function(r){
+    if (r.date.getMonth() !== lastM){
+      lastM = r.date.getMonth();
+      h += '<div class="mhead">' + MON[lastM] + " " + r.date.getFullYear() + '</div>';
+    }
+    var neg = r.bal < -0.004, pay = r.ins.length > 0, pills = "";
+    r.ins.forEach(function(i){  pills += '<span class="pill in">'+esc(i.name)+' <b>+'+n2(i.amount)+'</b></span>'; });
+    r.outs.forEach(function(b){ pills += '<span class="pill">'+esc(b.name)+' <b>\u2212'+n2(b.amount)+'</b></span>'; });
+    if (!pills) pills = '<span class="pill" style="opacity:.45">nothing scheduled</span>';
+    h += '<div class="day'+(neg?" short":(pay?" pay":""))+'">' +
+           '<div class="dt"><div class="w">'+DOWS[r.date.getDay()]+'</div>' +
+           '<div class="d">'+MON[r.date.getMonth()]+" "+r.date.getDate()+'</div></div>' +
+           '<div class="ev">'+pills+'</div>' +
+           '<div class="bal'+(neg?" neg":"")+'">'+money(r.bal)+'</div></div>';
+  });
+  $("ledger").innerHTML = h;
+}
+
+function pendingList(){
+  var un = uncounted(), box = $("pendList");
+  if (!un.length){
+    box.innerHTML = '<div class="empty">Everything you\'ve logged has cleared the bank.</div>';
+    return;
+  }
+  un.sort(function(a,b){ return a.date < b.date ? 1 : -1; });
+  box.innerHTML = un.map(function(t){
+    return '<div class="row">' +
+      '<button class="tick" data-clear="'+t.id+'">\u2713</button>' +
+      '<div class="body"><div class="t">'+esc(t.name)+'</div>' +
+      '<div class="s">'+nice(t.date)+(t.cat?" \u00b7 "+esc(t.cat):"")+'</div></div>' +
+      '<div class="amt mono '+(t.amount<0?"out":"in")+'">'+signed(t.amount)+'</div>' +
+      '<button class="tick" data-del="'+t.id+'">\u00d7</button></div>';
+  }).join("");
+}
+
+function categories(){
+  var t = today(), pre = iso(t).slice(0,7), sums = {}, tot = 0;
+  state.txns.forEach(function(x){
+    if (x.amount >= 0 || x.date.slice(0,7) !== pre) return;
+    var c = x.cat || "Other";
+    sums[c] = (sums[c] || 0) + Math.abs(x.amount);
+    tot += Math.abs(x.amount);
+  });
+  $("catTitle").textContent = MON[t.getMonth()] + " spending by category";
+  var keys = Object.keys(sums).sort(function(a,b){ return sums[b]-sums[a]; });
+  if (!keys.length){
+    $("catList").innerHTML = '<div class="empty">Log an expense and it\'ll break down here.</div>';
+    return;
+  }
+  $("catList").innerHTML = keys.map(function(k){
+    var pct = tot ? Math.round(sums[k]/tot*100) : 0;
+    return '<div class="cat"><div class="l"><span>'+esc(k)+' <span style="color:var(--muted)">'+pct+'%</span></span>' +
+      '<b>'+n2(sums[k])+'</b></div><div class="bar"><i style="width:'+Math.max(2,pct)+'%"></i></div></div>';
+  }).join("") +
+  '<div class="row" style="background:var(--panel2)"><div class="body"><div class="t" style="font-size:13px">Total</div></div>' +
+  '<div class="amt out mono">\u2212'+n2(tot)+'</div></div>';
+}
+
+function history(){
+  var box = $("histList"), list = state.txns.slice().sort(function(a,b){
+    return a.date === b.date ? (a.id < b.id ? 1 : -1) : (a.date < b.date ? 1 : -1);
+  });
+  if (!list.length){
+    box.innerHTML = '<div class="empty">No transactions yet.<br>Log one above and it\'ll show up here.</div>';
+    return;
+  }
+  var h = "", lastM = "";
+  list.forEach(function(t){
+    var m = t.date.slice(0,7);
+    if (m !== lastM){
+      lastM = m;
+      var d = parseISO(t.date);
+      h += '<div class="mhead">' + MON[d.getMonth()] + " " + d.getFullYear() + '</div>';
+    }
+    h += '<div class="row"><div class="body"><div class="t">'+esc(t.name)+
+         (t.cleared ? "" : '<span class="flag">pending</span>')+'</div>' +
+         '<div class="s">'+nice(t.date)+(t.cat?" \u00b7 "+esc(t.cat):"")+'</div></div>' +
+         '<div class="amt mono '+(t.amount<0?"out":"in")+'">'+signed(t.amount)+'</div>' +
+         '<button class="tick" data-del="'+t.id+'">\u00d7</button></div>';
+  });
+  box.innerHTML = h;
+}
+
+function rules(kind){
+  var arr = kind === "inc" ? state.incomes : state.bills;
+  var box = $(kind + "List");
+  if (!arr.length){
+    box.innerHTML = '<div class="empty">Nothing here yet.</div>';
+    return;
+  }
+  box.innerHTML = arr.map(function(r){
+    return '<div class="row"><div class="body"><div class="t">'+esc(r.name)+'</div>' +
+      '<div class="s">'+esc(freqLabel(r))+'</div></div>' +
+      '<div class="amt mono '+(kind==="inc"?"in":"out")+'">'+(kind==="inc"?"+":"\u2212")+n2(r.amount)+'</div>' +
+      '<button class="tick" data-edit="'+kind+':'+r.id+'">\u270e</button>' +
+      '<button class="tick" data-delr="'+kind+':'+r.id+'">\u00d7</button></div>';
+  }).join("");
+}
+
+/* ================= transaction form ================= */
+var txDir = -1;
+function openTx(dir){
+  txDir = dir;
+  var f = $("txForm");
+  f.innerHTML =
+    '<div class="fr"><label>What was it?</label>' +
+      '<input id="x_name" placeholder="'+(dir<0?"Coffee, gas, groceries\u2026":"Refund, side job\u2026")+'"></div>' +
+    '<div class="fr"><label>Amount ($)</label>' +
+      '<input id="x_amt" type="number" step="0.01" inputmode="decimal" placeholder="0.00"></div>' +
+    '<div class="fr"><label>When</label><input id="x_date" type="date" value="'+iso(today())+'"></div>' +
+    (dir<0 ? '<div class="fr"><label>Category</label><select id="x_cat">' +
+      CATS.map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join("") + '</select></div>' : '') +
+    '<label class="check"><input type="checkbox" id="x_clr">' +
+      '<span>Already showing on my bank statement</span></label>' +
+    '<div class="btns"><button class="btn go" id="x_save">Save</button>' +
+      '<button class="btn" id="x_cancel">Cancel</button></div>';
+  f.classList.remove("hide");
+  $("x_name").focus();
+  $("x_cancel").onclick = function(){ f.innerHTML = ""; f.classList.add("hide"); };
+  $("x_save").onclick = function(){
+    var name = $("x_name").value.trim();
+    var amt  = parseFloat($("x_amt").value);
+    if (!name){ toast("Give it a name"); return; }
+    if (!(amt > 0)){ toast("Enter an amount"); return; }
+    state.txns.push({
+      id: uid(), name: name, amount: (dir < 0 ? -1 : 1) * Math.round(amt*100)/100,
+      date: $("x_date").value || iso(today()),
+      cat: dir < 0 ? $("x_cat").value : "Income",
+      cleared: $("x_clr").checked
+    });
+    f.innerHTML = ""; f.classList.add("hide");
+    save(); render();
+    toast($("x_clr") ? "Logged" : "Logged");
+  };
+}
+
+/* ================= rule form ================= */
+function opt(v,l,sel){ return '<option value="'+v+'"'+(v===sel?" selected":"")+'>'+l+'</option>'; }
+function openRule(kind, id){
+  ["incForm","billForm"].forEach(function(fid){
+    var el = $(fid); el.innerHTML = ""; el.classList.add("hide");
+  });
+  var arr = kind === "inc" ? state.incomes : state.bills;
+  var it = id ? arr.filter(function(x){ return x.id === id; })[0] : null;
+  var f  = $(kind + "Form");
+  var fq = it ? it.freq : (kind === "inc" ? "weekly" : "monthly");
+
+  f.innerHTML =
+    '<div class="fr"><label>Name</label><input id="r_name" value="'+(it?esc(it.name):"")+'"></div>' +
+    '<div class="fr"><label>Amount ($)</label><input id="r_amt" type="number" step="0.01" inputmode="decimal" value="'+(it&&it.amount?it.amount:"")+'"></div>' +
+    (kind === "bill" ? '<div class="fr"><label>Category</label><select id="r_cat">' +
+      CATS.map(function(c){ return opt(c,c,(it&&it.cat)?it.cat:"Bills"); }).join("") + '</select></div>' : '') +
+    '<div class="fr"><label>How often</label><select id="r_freq">' +
+      opt("daily","Every day",fq)+opt("weekly","Every week",fq)+opt("biweekly","Every 2 weeks",fq)+
+      opt("twicemonth","Twice a month",fq)+opt("monthly","Every month",fq)+
+      opt("bimonthly","Every 2 months",fq)+opt("once","One time",fq) + '</select></div>' +
+    '<div class="fr hide" id="r_dowR"><label>Which day</label><select id="r_dow">' +
+      DOW.map(function(d,i){ return opt(String(i), d, String(it && it.dow != null ? it.dow : 3)); }).join("") +
+      '</select></div>' +
+    '<div class="fr hide" id="r_domR"><label id="r_domL">Day of month</label>' +
+      '<input id="r_dom" type="number" min="1" max="31" inputmode="numeric" value="'+(it&&it.dom?it.dom:1)+'"></div>' +
+    '<div class="fr hide" id="r_dom2R"><label>Second day of month</label>' +
+      '<input id="r_dom2" type="number" min="1" max="31" inputmode="numeric" value="'+(it&&it.dom2?it.dom2:15)+'"></div>' +
+    '<div class="fr hide" id="r_dateR"><label id="r_dateL">Date</label>' +
+      '<input id="r_date" type="date" value="'+(it ? (it.date || it.anchor || iso(today())) : iso(today()))+'"></div>' +
+    '<div class="fr hide" id="r_startR"><label>Starts on (optional)</label>' +
+      '<input id="r_start" type="date" value="'+(it&&it.start?it.start:"")+'"></div>' +
+    '<div class="fr hide" id="r_endR"><label>Ends on (optional)</label>' +
+      '<input id="r_end" type="date" value="'+(it&&it.end?it.end:"")+'"></div>' +
+    '<div class="btns"><button class="btn go" id="r_save">Save</button>' +
+      '<button class="btn" id="r_cancel">Cancel</button></div>';
+  f.classList.remove("hide");
+
+  function sync(){
+    var v = $("r_freq").value;
+    $("r_dowR").classList.toggle("hide", v !== "weekly");
+    $("r_domR").classList.toggle("hide", v !== "monthly" && v !== "twicemonth");
+    $("r_dom2R").classList.toggle("hide", v !== "twicemonth");
+    $("r_domL").textContent = v === "twicemonth" ? "First day of month" : "Day of month";
+    $("r_dateR").classList.toggle("hide", v !== "once" && v !== "biweekly" && v !== "bimonthly");
+    $("r_dateL").textContent = v === "biweekly" ? "Next date it lands"
+                             : v === "bimonthly" ? "First date it lands" : "Date";
+    $("r_startR").classList.toggle("hide", v === "once");
+    $("r_endR").classList.toggle("hide", v === "once");
+  }
+  $("r_freq").onchange = sync; sync();
+
+  $("r_cancel").onclick = function(){ f.innerHTML = ""; f.classList.add("hide"); };
+  $("r_save").onclick = function(){
+    var name = $("r_name").value.trim();
+    var amt  = parseFloat($("r_amt").value) || 0;
+    if (!name){ toast("Give it a name"); return; }
+    var v = $("r_freq").value;
+    var o = { id: it ? it.id : uid(), name: name, amount: Math.round(amt*100)/100, freq: v };
+    if (kind === "bill") o.cat = $("r_cat").value;
+    if (v === "weekly") o.dow = +$("r_dow").value;
+    if (v === "monthly" || v === "twicemonth") o.dom = Math.min(31, Math.max(1, +$("r_dom").value || 1));
+    if (v === "twicemonth") o.dom2 = Math.min(31, Math.max(1, +$("r_dom2").value || 15));
+    if (v === "once") o.date = $("r_date").value;
+    if (v === "biweekly" || v === "bimonthly") o.anchor = $("r_date").value;
+    if (v !== "once"){
+      var s = $("r_start").value, e = $("r_end").value;
+      if (s && e && e < s){ toast("End date is before the start date"); return; }
+      if (s) o.start = s;
+      if (e) o.end = e;
+    }
+    if (it) arr[arr.indexOf(it)] = o; else arr.push(o);
+    f.innerHTML = ""; f.classList.add("hide");
+    save(); render();
+  };
+}
+
+/* ================= taps ================= */
+var armed = {};
+function twoTap(btn, key, label, run){
+  if (armed[key]){ clearTimeout(armed[key]); delete armed[key]; run(); return; }
+  btn.classList.add("on"); btn.style.background = "var(--coral)";
+  btn.style.borderColor = "var(--coral)"; btn.style.color = "#1A0E0C";
+  toast(label);
+  armed[key] = setTimeout(function(){
+    delete armed[key];
+    btn.classList.remove("on"); btn.style.background = ""; btn.style.borderColor = ""; btn.style.color = "";
+  }, 2500);
+}
+document.addEventListener("click", function(e){
+  var el = e.target;
+  if (!el || !el.getAttribute) return;
+  var c = el.getAttribute("data-clear");
+  if (c){
+    var tx = state.txns.filter(function(x){ return x.id === c; })[0];
+    if (tx){
+      tx.cleared = true;
+      if (tx.date > state.bank.date) tx.date = state.bank.date;
+      save(); render(); toast("Marked as cleared");
+    }
+    return;
+  }
+  var d = el.getAttribute("data-del");
+  if (d){
+    twoTap(el, "t"+d, "Tap \u00d7 again to delete", function(){
+      state.txns = state.txns.filter(function(x){ return x.id !== d; });
+      save(); render(); toast("Deleted");
+    });
+    return;
+  }
+  var ed = el.getAttribute("data-edit");
+  if (ed){ var a = ed.split(":"); openRule(a[0], a[1]); return; }
+  var dr = el.getAttribute("data-delr");
+  if (dr){
+    var b = dr.split(":"), arr = b[0] === "inc" ? state.incomes : state.bills;
+    twoTap(el, "r"+dr, "Tap \u00d7 again to delete", function(){
+      var i = arr.map(function(x){ return x.id; }).indexOf(b[1]);
+      if (i > -1) arr.splice(i,1);
+      save(); render(); toast("Deleted");
+    });
+  }
+});
+
+function tab(which){
+  [["Today","pgToday"],["Act","pgAct"],["Plan","pgPlan"],["Guide","pgGuide"],["Set","pgSet"]].forEach(function(p){
+    $("nv"+p[0]).classList.toggle("on", p[0] === which);
+    $(p[1]).classList.toggle("hide", p[0] !== which);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ================= start ================= */
+function init(){
+  /* Ask the browser not to evict our data. Helps on Chrome and Android;
+     Safari makes no promises, which is exactly why backups exist. */
+  try{
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+  }catch(e){}
+
+  $("nvToday").onclick = function(){ tab("Today"); };
+  $("nvAct").onclick   = function(){ tab("Act"); };
+  $("nvPlan").onclick  = function(){ tab("Plan"); };
+  $("nvGuide").onclick = function(){ tab("Guide"); };
+  $("nvSet").onclick   = function(){ tab("Set"); };
+
+  $("dlBtn").onclick = downloadBackup;
+  $("upFile").onchange = function(e){
+    restoreFile(e.target.files && e.target.files[0]);
+    e.target.value = "";
+  };
+
+  $("addOut").onclick = function(){ openTx(-1); };
+  $("addIn").onclick  = function(){ openTx(1); };
+  $("incAdd").onclick  = function(){ openRule("inc", null); };
+  $("billAdd").onclick = function(){ openRule("bill", null); };
+
+  $("bkSet").onclick = function(){
+    var v = parseFloat($("bkAmt").value);
+    if (isNaN(v)){ toast("Type the balance your bank shows"); return; }
+    state.bank.balance = Math.round(v*100)/100;
+    state.bank.date = iso(today());
+    $("bkAmt").value = "";
+    save(); render(); toast("Bank balance updated");
+  };
+
+  $("expBtn").onclick = function(){
+    $("dataBox").value = JSON.stringify(state, null, 1);
+    $("dataBox").select();
+    toast("Copy this and keep it somewhere safe");
+  };  $("impBtn").onclick = function(){
+    var raw = $("dataBox").value.trim();
+    if (!raw){ toast("Paste your saved data in the box first"); return; }
+    try{
+      var s = normalize(JSON.parse(raw));
+      if (!s.bills && !s.txns) throw 0;
+      state = s; save(); render(); tab("Today");
+      toast("Ledger loaded");
+    }catch(err){ toast("That doesn't look like ledger data"); }
+  };
+  $("wipeBtn").onclick = function(){
+    twoTap($("wipeBtn"), "wipe", "Tap again to erase everything", function(){
+      state = defaults(); state.txns = []; save(); render(); tab("Today");
+      toast("Erased");
+    });
+  };
+
+  $("boot").classList.add("hide");
+  $("app").classList.remove("hide");
+  if (backend === "none") toast("This viewer won't keep changes");
+  render();
+}
+
+load().then(init).catch(function(err){
+  $("boot").textContent = "Something went wrong opening the ledger.";
+  if (window.console) console.error(err);
+});
+})();
+</script>
+</body>
+</html>
