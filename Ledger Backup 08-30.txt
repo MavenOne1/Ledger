@@ -1,0 +1,254 @@
+{
+ "v": 4,
+ "bank": {
+  "balance": 177.09,
+  "date": "2026-08-30"
+ },
+ "txns": [],
+ "incomes": [
+  {
+   "id": "mtecv68y94nyw",
+   "name": "Previous Pay Check",
+   "amount": 959.65,
+   "freq": "weekly",
+   "dow": 3,
+   "start": "2026-08-26",
+   "end": "2026-09-02"
+  },
+  {
+   "id": "mtecv68ycs4rm",
+   "name": "Pay Check",
+   "amount": 1279.55,
+   "freq": "weekly",
+   "dow": 3,
+   "start": "2026-09-09",
+   "end": "2027-02-10"
+  },
+  {
+   "id": "mteet7thelonx",
+   "name": "Cash App borrow",
+   "amount": 960,
+   "freq": "once",
+   "date": "2026-09-02"
+  }
+ ],
+ "bills": [
+  {
+   "id": "mtecv68yfbnko",
+   "name": "Rent",
+   "amount": 419.6,
+   "freq": "twicemonth",
+   "cat": "Rent",
+   "dom": 28,
+   "dom2": 16,
+   "start": "2026-09-01",
+   "end": "2026-09-16"
+  },
+  {
+   "id": "mtecv68yr5is5",
+   "name": "New Rent",
+   "amount": 873,
+   "freq": "twicemonth",
+   "cat": "Rent",
+   "dom": 1,
+   "dom2": 15,
+   "start": "2026-10-01",
+   "end": "2027-01-07"
+  },
+  {
+   "id": "mtecv68yqgexz",
+   "name": "Car insurance",
+   "amount": 199.5,
+   "freq": "monthly",
+   "cat": "Car",
+   "dom": 5,
+   "start": "2026-08-26",
+   "end": "2027-02-10"
+  },
+  {
+   "id": "mtecv68y5t09u",
+   "name": "OnePay Credit Card",
+   "amount": 100,
+   "freq": "monthly",
+   "cat": "Debt",
+   "dom": 10,
+   "start": "2026-08-26",
+   "end": "2026-11-25"
+  },
+  {
+   "id": "mtecv68yg3wfb",
+   "name": "Power",
+   "amount": 161.65,
+   "freq": "monthly",
+   "cat": "Bills",
+   "dom": 17,
+   "start": "2026-08-26",
+   "end": "2027-01-27"
+  },
+  {
+   "id": "mtecv68yexhd2",
+   "name": "Internet",
+   "amount": 104,
+   "freq": "monthly",
+   "dom": 11,
+   "cat": "Bills",
+   "start": "2026-08-26",
+   "end": "2026-12-30"
+  },
+  {
+   "id": "mtecv68ydvwlz",
+   "name": "Water",
+   "amount": 69.74,
+   "freq": "monthly",
+   "dom": 28,
+   "cat": "Bills",
+   "start": "2026-08-26",
+   "end": "2027-02-24"
+  },
+  {
+   "id": "mtecv68ylykpy",
+   "name": "Big Tuna Car Wash",
+   "amount": 39.95,
+   "freq": "monthly",
+   "cat": "Car",
+   "dom": 24,
+   "start": "2026-08-26",
+   "end": "2026-08-30"
+  },
+  {
+   "id": "mtecv68yi32fw",
+   "name": "Kickoff Credit",
+   "amount": 35,
+   "freq": "monthly",
+   "cat": "Debt",
+   "dom": 27,
+   "start": "2026-08-26",
+   "end": "2026-12-30"
+  },
+  {
+   "id": "mtecv68y2td2k",
+   "name": "Gas (utility)",
+   "amount": 34.82,
+   "freq": "monthly",
+   "dom": 8,
+   "cat": "Bills",
+   "start": "2026-08-26",
+   "end": "2026-12-30"
+  },
+  {
+   "id": "mtecv68yk4rdc",
+   "name": "Cell Phone",
+   "amount": 33.38,
+   "freq": "monthly",
+   "dom": 2,
+   "cat": "Bills",
+   "start": "2026-08-26",
+   "end": "2026-12-30"
+  },
+  {
+   "id": "mtecv68yj2rc7",
+   "name": "Chatgpt",
+   "amount": 21.6,
+   "freq": "monthly",
+   "cat": "Fun",
+   "dom": 25,
+   "start": "2026-08-26",
+   "end": "2026-08-30"
+  },
+  {
+   "id": "mtecv68ya0rxg",
+   "name": "AD&D insurance",
+   "amount": 20,
+   "freq": "monthly",
+   "dom": 6,
+   "cat": "Health",
+   "start": "2026-08-26",
+   "end": "2026-12-30"
+  },
+  {
+   "id": "mtecv68yl4jfi",
+   "name": "Claude",
+   "amount": 20,
+   "freq": "monthly",
+   "dom": 21,
+   "cat": "Fun",
+   "start": "2026-08-26",
+   "end": "2027-01-27"
+  },
+  {
+   "id": "mtecv68ysyezt",
+   "name": "Prime",
+   "amount": 16.19,
+   "freq": "monthly",
+   "cat": "Fun",
+   "dom": 13,
+   "start": "2026-08-26",
+   "end": "2026-08-30"
+  },
+  {
+   "id": "mtecv68y8l23r",
+   "name": "Cashapp",
+   "amount": 100,
+   "freq": "weekly",
+   "cat": "Other",
+   "dow": 3,
+   "start": "2026-08-27",
+   "end": "2026-09-03"
+  },
+  {
+   "id": "mtecv68ywqlba",
+   "name": "Beer (daily)",
+   "amount": 0,
+   "freq": "daily",
+   "cat": "Fun",
+   "start": "2026-08-26",
+   "end": "2026-12-30"
+  },
+  {
+   "id": "mtecv68yq5rgi",
+   "name": "Food (daily)",
+   "amount": 0,
+   "freq": "daily",
+   "cat": "Food",
+   "start": "2026-08-26",
+   "end": "2026-12-30"
+  },
+  {
+   "id": "mteebjk3kz9y6",
+   "name": "Deposit new house",
+   "amount": 1650,
+   "freq": "once",
+   "cat": "Bills",
+   "date": "2026-09-02"
+  },
+  {
+   "id": "mteecw8byr41a",
+   "name": "Application fee",
+   "amount": 103,
+   "freq": "once",
+   "cat": "Bills",
+   "date": "2026-08-27"
+  },
+  {
+   "id": "mtef8u4rxtjt4",
+   "name": "Cash App new bill",
+   "amount": 200,
+   "freq": "weekly",
+   "cat": "Bills",
+   "dow": 3,
+   "start": "2026-09-04",
+   "end": "2026-11-02"
+  },
+  {
+   "id": "mtg4rka3ag062",
+   "name": "Capital One Card",
+   "amount": 25,
+   "freq": "monthly",
+   "cat": "Bills",
+   "dom": 4,
+   "start": "2026-08-27",
+   "end": "2026-10-14"
+  }
+ ],
+ "lastBackup": "2026-08-29"
+}
